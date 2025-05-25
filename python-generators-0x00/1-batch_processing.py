@@ -16,7 +16,7 @@ def stream_users_in_batches(batch_size):
         rows = cursor.fetchmany(batch_size)
         if not rows:
             break
-        return rows
+        yield rows
 
     cursor.close()
     connection.close()

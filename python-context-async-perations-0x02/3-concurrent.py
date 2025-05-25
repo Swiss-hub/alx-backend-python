@@ -1,27 +1,31 @@
-import sqlite3
+import asyncio
+import aiosqlite
 
-class ExecuteQuery:
-    def __init__(self, query, params=()):
-        self.query = query
-        self.params = params
-        self.conn = None
-        self.results = None
+# Fetch all users
+async def async_fetch_users():
+    async with aiosqlite.connect("users.db") as db:
+        async with db.execute("SELECT * FROM users") as cursor:
+            users = await cursor.fetchall()
+            print("All Users:")
+            for user in users:
+                print(user)
 
-    def __enter__(self):
-        self.conn = sqlite3.connect('users.db')
-        cursor = self.conn.cursor()
-        cursor.execute(self.query, self.params)
-        self.results = cursor.fetchall()
-        return self.results
+# Fetch users older than 40
+async def async_fetch_older_users():
+    async with aiosqlite.connect("users.db") as db:
+        async with db.execute("SELECT * FROM users WHERE age > 40") as cursor:
+            older_users = await cursor.fetchall()
+            print("\nUsers older than 40:")
+            for user in older_users:
+                print(user)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.conn:
-            self.conn.close()
+# Run both functions concurrently
+async def fetch_concurrently():
+    await asyncio.gather(
+        async_fetch_users(),
+        async_fetch_older_users()
+    )
 
-# ✅ Use the context manager to run a parameterized query
-query = "SELECT * FROM users WHERE age > ?"
-params = (25,)
-
-with ExecuteQuery(query, params) as results:
-    for row in results:
-        print(row)
+# Run the async entry point
+if __name__ == "__main__":
+    asyncio.run(fetch_concurrently())

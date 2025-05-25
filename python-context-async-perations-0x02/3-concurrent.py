@@ -29,3 +29,4 @@ async def fetch_concurrently():
 # Run the async entry point
 if __name__ == "__main__":
     asyncio.run(fetch_concurrently())
+return

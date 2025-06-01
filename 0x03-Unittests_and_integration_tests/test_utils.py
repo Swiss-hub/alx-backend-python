@@ -1,34 +1,61 @@
 #!/usr/bin/env python3
-"""
-Unit tests for utils.access_nested_map
-"""
-
 import unittest
+from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
-from utils import access_nested_map
+from client import GithubOrgClient
 
 
-class TestAccessNestedMap(unittest.TestCase):
-    """Tests for access_nested_map function"""
-
-    @parameterized.expand([
-    ("nested_map_simple", {"a": 1}, ("a",), 1),
-    ("nested_map_nested", {"a": {"b": 2}}, ("a",), {"b": 2}),
-    ("nested_map_deep", {"a": {"b": 2}}, ("a", "b"), 2),
-    ])
-    def test_access_nested_map(self, name, nested_map, path, expected):
-        """Test successful access to nested maps"""
-        self.assertEqual(access_nested_map(nested_map, path), expected)
+class TestGithubOrgClient(unittest.TestCase):
 
     @parameterized.expand([
-        ("missing_key_1", {}, ("a",)),
-        ("missing_key_2", {"a": 1}, ("a", "b")),
+        ("google",),
+        ("abc",),
     ])
-    def test_access_nested_map_exception(self, name, nested_map, path):
-        """Test KeyError is raised when key is missing"""
-        with self.assertRaises(KeyError) as context:
-            access_nested_map(nested_map, path)
-    self.assertEqual(str(context.exception), f"'{path[-1]}'")
+    @patch('client.get_json')
+    def test_org(self, org_name, mock_get_json):
+        client = GithubOrgClient(org_name)
+        expected_url = f"https://api.github.com/orgs/{org_name}"
+        mock_get_json.return_value = {"login": org_name}
+        result = client.org()
+        mock_get_json.assert_called_once_with(expected_url)
+        self.assertEqual(result, {"login": org_name})
+
+    @patch('client.GithubOrgClient.org', new_callable=PropertyMock)
+    def test_public_repos_url(self, mock_org):
+        mock_org.return_value = {"repos_url": "http://some_url"}
+        client = GithubOrgClient("test_org")
+        self.assertEqual(client._public_repos_url, "http://some_url")
+
+    @patch('client.get_json')
+    @patch('client.GithubOrgClient._public_repos_url', new_callable=PropertyMock)
+    def test_repos_payload(self, mock_public_repos_url, mock_get_json):
+        mock_public_repos_url.return_value = "http://some_url"
+        mock_get_json.return_value = [{"id": 1}]
+        client = GithubOrgClient("test_org")
+        self.assertEqual(client.repos_payload, [{"id": 1}])
+        mock_get_json.assert_called_once_with("http://some_url")
+
+    @patch('client.GithubOrgClient.repos_payload', new_callable=PropertyMock)
+    def test_public_repos(self, mock_repos_payload):
+        mock_repos_payload.return_value = [
+            {"name": "repo1", "license": {"key": "mit"}},
+            {"name": "repo2", "license": {"key": "apache-2.0"}},
+            {"name": "repo3"}
+        ]
+        client = GithubOrgClient("test_org")
+        # No license filter
+        self.assertEqual(client.public_repos(), ["repo1", "repo2", "repo3"])
+        # With license filter
+        self.assertEqual(client.public_repos(license="mit"), ["repo1"])
+        self.assertEqual(client.public_repos(license="apache-2.0"), ["repo2"])
+        self.assertEqual(client.public_repos(license="gpl"), [])
+
+    def test_has_license(self):
+        repo = {"license": {"key": "mit"}}
+        self.assertTrue(GithubOrgClient.has_license(repo, "mit"))
+        self.assertFalse(GithubOrgClient.has_license(repo, "apache-2.0"))
+        repo_no_license = {}
+        self.assertFalse(GithubOrgClient.has_license(repo_no_license, "mit"))
 
 
 if __name__ == '__main__':

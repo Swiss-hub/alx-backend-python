@@ -17,7 +17,7 @@ class TestAccessNestedMap(unittest.TestCase):
         ("nested_map_deep", {"a": {"b": 2}}, ("a", "b"), 2),
     ])
     def test_access_nested_map(self, name, nested_map, path, expected):
-        """Test access_nested_map with various inputs"""
+        """Test that access_nested_map returns expected value"""
         self.assertEqual(access_nested_map(nested_map, path), expected)
 
 

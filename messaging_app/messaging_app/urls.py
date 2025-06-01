@@ -21,3 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('chats.urls')),
 ]
+# The above code sets up the URL routing for the messaging application.
+# It includes the admin interface and the API endpoints defined in the 'chats' app.

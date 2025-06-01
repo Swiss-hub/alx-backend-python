@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
@@ -60,4 +59,3 @@ class TestGithubOrgClient(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    

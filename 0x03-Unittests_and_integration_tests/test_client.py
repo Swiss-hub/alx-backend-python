@@ -49,6 +49,18 @@ class TestGithubOrgClient(unittest.TestCase):
     self.assertEqual(client.public_repos(license="apache-2.0"), ["repo2"])
     self.assertEqual(client.public_repos(license="gpl"), [])
 
+  @patch('client.GithubOrgClient.repos_payload', new_callable=PropertyMock)
+  def test_public_repos_with_license(self, mock_repos_payload):
+        """Test public_repos returns only repos with the specified license."""
+        mock_repos_payload.return_value = [
+            {"name": "repo1", "license": {"key": "mit"}},
+            {"name": "repo2", "license": {"key": "apache-2.0"}},
+            {"name": "repo3"}
+        ]
+        client = GithubOrgClient("test_org")
+        expected = ["repo2"]
+        self.assertEqual(client.public_repos(license="apache-2.0"), expected)
+
   def test_has_license(self):
     repo = {"license": {"key": "mit"}}
     self.assertTrue(GithubOrgClient.has_license(repo, "mit"))

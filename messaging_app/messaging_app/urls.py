@@ -20,6 +20,7 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('chats.urls')),
+    path('api-auth/', include('rest_framework.urls')),  # <-- Add this line
 ]
 # The above code sets up the URL routing for the messaging application.
 # It includes the admin interface and the API endpoints defined in the 'chats' app.

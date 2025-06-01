@@ -23,7 +23,4 @@ router = DefaultRouter()
 router.register(r'conversations', ConversationViewSet, basename='conversation')
 router.register(r'messages', MessageViewSet, basename='message')
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('chats.urls')),
-]
+urlpatterns = router.urls

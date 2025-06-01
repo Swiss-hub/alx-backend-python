@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from rest_framework import serializers
 
 class User(AbstractUser):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -33,3 +34,23 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message {self.message_id} from {self.sender.email}"
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['user_id', 'email', 'first_name', 'last_name', 'phone_number']
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Message
+        fields = ['message_id', 'sender', 'message_body', 'sent_at']
+
+class ConversationSerializer(serializers.ModelSerializer):
+    participants = UserSerializer(many=True, read_only=True)
+    messages = MessageSerializer(many=True, read_only=True, source='messages')
+
+    class Meta:
+        model = Conversation
+        fields = ['conversation_id', 'participants', 'created_at', 'messages']

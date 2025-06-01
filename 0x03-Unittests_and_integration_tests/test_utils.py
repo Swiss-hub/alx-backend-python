@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 @parameterized.expand([
     ("nested_map_simple", {"a": 1}, ("a",), 1),
     ("nested_map_nested", {"a": {"b": 2}}, ("a",), {"b": 2}),

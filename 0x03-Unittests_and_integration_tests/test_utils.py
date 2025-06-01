@@ -4,24 +4,35 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import unittest
 from unittest.mock import patch, PropertyMock
-from parameterized import parameterized
+from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
 
 
+@parameterized_class([
+    {"org_name": "google"},
+    {"org_name": "abc"},
+])
 class TestGithubOrgClient(unittest.TestCase):
 
-    @parameterized.expand([
-        ("google",),
-        ("abc",),
-    ])
+    @classmethod
+    def setUpClass(cls):
+        """Set up resources before any tests are run."""
+        cls.get_patcher = patch('requests.get')
+        cls.mock_get = cls.get_patcher.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up resources after all tests are run."""
+        cls.get_patcher.stop()
+
     @patch('client.get_json')
-    def test_org(self, org_name, mock_get_json):
-        client = GithubOrgClient(org_name)
-        expected_url = f"https://api.github.com/orgs/{org_name}"
-        mock_get_json.return_value = {"login": org_name}
+    def test_org(self, mock_get_json):
+        client = GithubOrgClient(self.org_name)
+        expected_url = f"https://api.github.com/orgs/{self.org_name}"
+        mock_get_json.return_value = {"login": self.org_name}
         result = client.org()
         mock_get_json.assert_called_once_with(expected_url)
-        self.assertEqual(result, {"login": org_name})
+        self.assertEqual(result, {"login": self.org_name})
 
     @patch('client.GithubOrgClient.org', new_callable=PropertyMock)
     def test_public_repos_url(self, mock_org):

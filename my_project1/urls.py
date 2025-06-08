@@ -1,5 +1,5 @@
 """
-URL configuration for messaging_app project.
+URL configuration for my_project project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
@@ -15,12 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+from my_app.views import MyModelListCreateAPIView  # Adjust to your app and view name
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('chats.urls')),
-    path('api-auth/', include('rest_framework.urls')),  # <-- Add this line
+    path('my-models/', MyModelListCreateAPIView.as_view(), name='my_model_list_create'),
 ]
-# The above code sets up the URL routing for the messaging application.
-# It includes the admin interface and the API endpoints defined in the 'chats' app.
+
+INSTALLED_APPS = [
+    # ... other apps ...
+    'my_app',
+]

@@ -105,15 +105,17 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticated', # Require authentication globally
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
         # Optionally, you can also enable SessionAuthentication for Browsable API
         'rest_framework.authentication.SessionAuthentication',
         "rest_framework.authentication.BasicAuthentication"
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],   
 }
+
 
 # JWT Settings (Optional but recommended)
 SIMPLE_JWT = {

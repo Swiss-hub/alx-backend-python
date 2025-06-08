@@ -1,11 +1,14 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, status, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
+from .pagination import MessagePagination
+from .filters import MessageFilter
 from rest_framework.status import HTTP_403_FORBIDDEN
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -47,7 +50,9 @@ class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated, IsParticipantOfConversation]
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = MessageFilter
+    pagination_class = MessagePagination
     search_fields = ['message_body', 'sender__email', 'conversation__conversation_id']
 
     def perform_create(self, serializer):

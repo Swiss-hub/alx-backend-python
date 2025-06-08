@@ -19,12 +19,27 @@ class IsParticipantOfConversation(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         """
         Object-level permission:
-        Only participants of the conversation can access.
-        - obj is typically a Message or Conversation instance.
+        Only participants of the conversation can perform:
+        - GET (view), POST (send), PUT/PATCH (update), DELETE (delete)
         """
+
+        user_is_participant = False
+
         # If checking a Conversation object
         if isinstance(obj, Conversation):
-            return request.user in obj.participants.all()
+            user_is_participant = request.user in obj.participants.all()
 
-        # If checking a Message object — assume it has a 'conversation' FK
-        return request.user in obj.conversation.participants.all()
+        else:
+            # If checking a Message object — assume it has a 'conversation' FK
+            user_is_participant = request.user in obj.conversation.participants.all()
+
+        # For safe methods (GET, HEAD, OPTIONS), allow if participant
+        if request.method in permissions.SAFE_METHODS:
+            return user_is_participant
+
+        # Explicitly check unsafe methods: PUT, PATCH, DELETE
+        if request.method in ("PUT", "PATCH", "DELETE"):
+            return user_is_participant
+
+        # For other methods (POST or anything else), also check participant
+        return user_is_participant

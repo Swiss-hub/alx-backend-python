@@ -111,6 +111,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         # Optionally, you can also enable SessionAuthentication for Browsable API
         'rest_framework.authentication.SessionAuthentication',
+        "rest_framework.authentication.BasicAuthentication"
     ],   
 }
 

@@ -11,7 +11,14 @@ class Message(models.Model):
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    edited = models.BooleanField(default=False)  # New field
+    edited = models.BooleanField(default=False)
+    parent_message = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        related_name='replies',
+        on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver}: {self.content[:20]}"
@@ -19,7 +26,7 @@ class Message(models.Model):
 class MessageHistory(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='history')
     old_content = models.TextField()
-    edited_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(auto_now_add=True) 
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='edited_histories')
 
     def __str__(self):
@@ -49,3 +56,19 @@ def log_message_edit(sender, instance, **kwargs):
                 instance.edited = True
         except Message.DoesNotExist:
             pass
+
+# Example: Fetch all top-level messages and their replies for a conversation
+messages = Message.objects.filter(parent_message__isnull=True).select_related('sender', 'receiver').prefetch_related('replies')
+
+def get_threaded_replies(message):
+    replies = message.replies.all().select_related('sender', 'receiver')
+    result = []
+    for reply in replies:
+        result.append({
+            'id': reply.id,
+            'content': reply.content,
+            'sender': reply.sender.username,
+            'timestamp': reply.timestamp,
+            'replies': get_threaded_replies(reply)
+        })
+    return result

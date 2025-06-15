@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.http import HttpResponseForbidden
 from django.db import models
+from .managers import UnreadMessagesManager
 
 User = get_user_model()
 
@@ -21,6 +22,9 @@ class Message(models.Model):
         related_name='replies',
         on_delete=models.CASCADE
     )
+
+    objects = models.Manager()  # Default manager
+    unread = UnreadMessagesManager()  # Custom manager
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver}: {self.content[:20]}"

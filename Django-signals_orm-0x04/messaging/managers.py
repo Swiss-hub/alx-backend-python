@@ -22,6 +22,9 @@ class Message(models.Model):
         on_delete=models.CASCADE
     )
 
+    objects = models.Manager()  # The default manager.
+    unread = UnreadMessagesManager()  # Our custom manager.
+
     def __str__(self):
         return f"From {self.sender} to {self.receiver}: {self.content[:20]}"
 
@@ -35,3 +38,7 @@ def delete_user(request):
 
 # To get unread messages for a user:
 unread_messages = Message.unread.for_user(request.user)
+
+class UnreadMessagesManager(models.Manager):
+    def for_user(self, user):
+        return self.get_queryset().filter(receiver=user, read=False).only('id', 'sender', 'content', 'timestamp')

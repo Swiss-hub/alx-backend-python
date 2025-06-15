@@ -14,3 +14,5 @@ def delete_user(request):
         user.delete()
         return redirect('account_deleted')  # Or any page you want
     return HttpResponseForbidden("Only POST allowed.")
+
+# c:\Users\ABC\Desktop\ALX\alx-backend-python\Django-signals_orm-0x04\messaging\views.py

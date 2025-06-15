@@ -32,3 +32,6 @@ def delete_user(request):
         user.delete()
         return redirect('account_deleted')  # Or any page you want
     return HttpResponseForbidden("Only POST allowed.")
+
+# To get unread messages for a user:
+unread_messages = Message.unread.for_user(request.user)

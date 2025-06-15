@@ -6,6 +6,10 @@ from django.dispatch import receiver
 
 User = get_user_model()
 
+class UnreadMessagesManager(models.Manager):
+    def for_user(self, user):
+        return self.get_queryset().filter(receiver=user, read=False).only('id', 'sender', 'content', 'timestamp')
+
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
@@ -19,6 +23,10 @@ class Message(models.Model):
         related_name='replies',
         on_delete=models.CASCADE
     )
+    read = models.BooleanField(default=False)  # New field
+
+    objects = models.Manager()  # Default manager
+    unread = UnreadMessagesManager()  # Custom manager
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver}: {self.content[:20]}"

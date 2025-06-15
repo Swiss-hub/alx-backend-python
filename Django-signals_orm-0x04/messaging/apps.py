@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
-class MessagingConfig(AppConfig):
-    name = 'messaging'
+class ChatConfig(AppConfig):
+    name = 'Django-Chat'
 
     def ready(self):
-        import messaging.signals
+        import Django-Chat.signals

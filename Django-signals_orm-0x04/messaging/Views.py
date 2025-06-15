@@ -1,4 +1,4 @@
-# Django-Chat/Views.py
+# Django-Chat/views.py
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required

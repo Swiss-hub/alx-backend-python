@@ -4,8 +4,26 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.http import HttpResponseForbidden
+from django.db import models
 
 User = get_user_model()
+
+class Message(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    edited = models.BooleanField(default=False)
+    parent_message = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        related_name='replies',
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return f"From {self.sender} to {self.receiver}: {self.content[:20]}"
 
 @login_required
 def delete_user(request):
@@ -14,5 +32,3 @@ def delete_user(request):
         user.delete()
         return redirect('account_deleted')  # Or any page you want
     return HttpResponseForbidden("Only POST allowed.")
-
-# c:\Users\ABC\Desktop\ALX\alx-backend-python\Django-signals_orm-0x04\messaging\views.py

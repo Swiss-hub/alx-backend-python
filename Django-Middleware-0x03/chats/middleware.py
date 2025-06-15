@@ -1,5 +1,5 @@
-from datetime import datetime
-from django.http import HttpResponseForbidden
+from datetime import datetime, timedelta
+from django.http import HttpResponseForbidden, JsonResponse
 
 class RequestLoggingMiddleware:
     def __init__(self, get_response):
@@ -57,3 +57,15 @@ class OffensiveLanguageMiddleware:
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+class RolepermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Only check for authenticated users
+        if request.user.is_authenticated:
+            # Allow only admins or moderators (staff)
+            if not (request.user.is_superuser or request.user.is_staff):
+                return HttpResponseForbidden("You do not have permission to perform this action.")
+        return self.get_response(request)

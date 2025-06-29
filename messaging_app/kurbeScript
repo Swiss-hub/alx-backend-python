@@ -1,0 +1,11 @@
+#!/bin/bash
+# filepath: messaging_app/kurbeScript
+
+# Start minikube (if not already running)
+minikube start
+
+# Verify the cluster is running
+kubectl cluster-info
+
+# Retrieve the available pods in all namespaces
+kubectl get pods --all-namespaces
